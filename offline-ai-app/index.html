@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1020">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Offline AI</title>
+<style>
+:root{--bg:#0f1020;--bg2:#171833;--card:rgba(255,255,255,.07);--bd:rgba(255,255,255,.12);--fg:#f1f1f8;--mut:#a3a4c2;--a:#7c7cff;--a2:#c06cff;--ok:#3ddc97}
+@media(prefers-color-scheme:light){:root{--bg:#f5f5fb;--bg2:#e9e9fb;--card:rgba(255,255,255,.8);--bd:rgba(30,30,80,.12);--fg:#1b1b32;--mut:#66688a}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg2),var(--bg));color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;height:100dvh;max-width:860px;margin:auto;padding-top:env(safe-area-inset-top)}
+button,select,textarea{font:inherit;color:inherit}
+header{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--a),var(--a2));display:grid;place-items:center;font-size:20px;box-shadow:0 6px 20px rgba(124,124,255,.4)}
+h1{font-size:18px;margin:0;line-height:1.1}
+.pill{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mut)}
+.pill.on .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.sp{flex:1}
+.ib{border:1px solid var(--bd);background:var(--card);border-radius:12px;width:40px;height:40px;cursor:pointer;font-size:17px;backdrop-filter:blur(8px)}
+#log{flex:1;overflow:auto;padding:6px 14px 14px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;backdrop-filter:blur(10px)}
+.hero{text-align:center;margin:auto 0}
+.hero h2{margin:6px 0 4px;font-size:24px}
+.hero p{margin:0 0 16px;color:var(--mut);font-size:14px}
+select{width:100%;padding:12px;border-radius:14px;border:1px solid var(--bd);background:var(--card);margin-bottom:10px}
+.go{width:100%;padding:13px;border:0;border-radius:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--a),var(--a2));cursor:pointer;box-shadow:0 8px 24px rgba(124,124,255,.35)}
+.go:disabled{opacity:.6}
+.prog{height:6px;border-radius:6px;background:var(--bd);overflow:hidden;margin-top:12px;display:none}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--a2));transition:width .25s}
+#st{font-size:12.5px;color:var(--mut);margin-top:8px;min-height:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.chip{border:1px solid var(--bd);background:var(--card);border-radius:20px;padding:8px 13px;font-size:13.5px;cursor:pointer}
+.row{display:flex;gap:10px;align-items:flex-end}
+.row.u{justify-content:flex-end}
+.av{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,var(--a),var(--a2));display:grid;place-items:center;font-size:15px;flex:none}
+.m{max-width:85%;padding:11px 14px;border-radius:18px;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
+.row.a .m{background:var(--card);border:1px solid var(--bd);border-bottom-left-radius:6px}
+.row.u .m{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;border-bottom-right-radius:6px}
+.m pre{background:rgba(0,0,0,.35);color:#eaeaff;padding:10px;border-radius:12px;overflow:auto;white-space:pre;font-size:13px;margin:8px 0}
+.m code{font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+.m :not(pre)>code{background:rgba(124,124,255,.2);padding:1px 5px;border-radius:6px}
+.cp{border:0;background:none;color:var(--mut);font-size:12px;cursor:pointer;padding:2px 4px}
+.typing span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--mut);animation:b 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
+#sysbox{display:none;margin:0 14px 8px}
+#sysbox textarea{width:100%;padding:10px;border-radius:14px;border:1px solid var(--bd);background:var(--card)}
+.pers{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+form{display:flex;gap:8px;align-items:flex-end;padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.box{flex:1;display:flex;background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:4px 6px 4px 14px;backdrop-filter:blur(10px)}
+#in{flex:1;background:none;border:0;outline:0;resize:none;max-height:130px;padding:9px 0;color:inherit}
+#send{width:46px;height:46px;border-radius:50%;border:0;color:#fff;font-size:18px;cursor:pointer;background:linear-gradient(135deg,var(--a),var(--a2));box-shadow:0 6px 18px rgba(124,124,255,.4)}
+#send:disabled{opacity:.4}
+#inst{display:none}
+
+.col{display:flex;flex-direction:column;min-width:0;max-width:85%}.col .m{max-width:100%}
+.tl{display:flex;gap:2px;flex-wrap:wrap}
+.cb{margin:8px 0;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.35)}
+.ch{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:12px;color:#b9b9e0}
+.sv{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:8px;padding:2px 8px;margin-left:4px;font-size:12px;cursor:pointer}
+.cb pre{margin:0;background:none;border-radius:0}.svgp{display:block;max-width:100%;background:#fff}
+#tray{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px}
+.att{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:4px 8px;font-size:12.5px;max-width:210px}
+.att img{width:26px;height:26px;object-fit:cover;border-radius:6px}.att b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.att i{cursor:pointer;font-style:normal;color:var(--mut)}
+.ib2{border:0;background:none;font-size:18px;cursor:pointer;width:36px}.ib2.rec{animation:b .8s infinite}
+#toast{position:fixed;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--bd);border-radius:20px;padding:6px 14px;font-size:13px;opacity:0;transition:opacity .2s;z-index:9;pointer-events:none;max-width:90%}
+#call{position:fixed;left:0;right:0;bottom:0;display:none;flex-direction:column;align-items:center;gap:8px;padding:30px 18px max(18px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,var(--bg) 40%);z-index:5}
+#call.on{display:flex}body.incall #log{padding-bottom:230px}
+#vid{position:fixed;top:70px;right:14px;width:110px;border-radius:16px;border:1px solid var(--bd);transform:scaleX(-1);display:none;z-index:6}
+.orb{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--a2),var(--a));box-shadow:0 0 40px rgba(124,124,255,.6);animation:p 2s infinite}
+.orb.think{animation-duration:.6s;filter:grayscale(.5)}.orb.talk{transform:scale(1.15)}
+@keyframes p{50%{transform:scale(1.08)}}#cs{font-size:13px;color:var(--mut)}#end{width:200px;background:#e5484d;box-shadow:none}
+@media(max-width:420px){.ib{width:36px;height:36px}header{gap:6px}}
+#dr,#mm{position:fixed;inset:0;z-index:8;display:none}#dr.on,#mm.on{display:block}
+.bk{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.dp{position:absolute;z-index:1;left:0;top:0;bottom:0;width:min(84%,320px);background:var(--bg2);border-right:1px solid var(--bd);padding:max(14px,env(safe-area-inset-top)) 12px 12px;display:flex;flex-direction:column;gap:10px}
+#cl{flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.ci{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:12px;border:1px solid transparent;cursor:pointer;background:var(--card)}
+.ci.cur{border-color:var(--a)}.ci span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.ci small{display:block;color:var(--mut);font-size:11px}.ci button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:15px}
+.sh{position:absolute;z-index:1;left:0;right:0;bottom:0;max-height:88dvh;overflow:auto;background:var(--bg2);border-top:1px solid var(--bd);border-radius:22px 22px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom));max-width:860px;margin:auto}
+.shh{display:flex;justify-content:space-between;align-items:center}.sm{font-size:12.5px;color:var(--mut);margin:6px 0 10px}
+.mr{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px;margin-bottom:10px}
+.mr .t{display:flex;justify-content:space-between;gap:8px;align-items:center}.mr small{color:var(--mut)}
+.mr .bt{display:flex;gap:6px;margin-top:8px}.mr .bt button{border-radius:12px;padding:8px 12px;border:1px solid var(--bd);background:var(--card);cursor:pointer;font-size:13.5px}
+.mr .bt .go{width:auto;flex:1;border:0}.ok{color:var(--ok);font-size:12px}
+.pg{height:6px;border-radius:6px;background:var(--bd);overflow:hidden;margin-top:8px;display:none}.pg i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--a2));transition:width .25s}
+@media(max-width:480px){header .logo{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <button class="ib" id="menu" title="Chat history">☰</button>
+  <div class="logo">✦</div>
+  <div><h1>SKA AI</h1><div class="pill" id="pill"><span class="dot"></span><span id="pt">Your Offline ChatPal</span></div></div>
+  <div class="sp"></div>
+  <button class="ib" id="inst" title="Install app">📲</button>
+  
+  <button class="ib" id="vc" title="Voice call">📞</button>
+  <button class="ib" id="cc" title="Video call">🎥</button>
+  <button class="ib" id="dm" title="Download &amp; manage models">⬇</button>
+  <button class="ib" id="clr" title="New chat">＋</button>
+</header>
+<div id="sysbox" class="card">
+  <div class="pers" id="pers"></div><div class="pers"><button class="chip" id="exp">Export chat</button></div>
+  <textarea id="sys" rows="3"></textarea>
+</div>
+<main id="log">
+  <div class="hero card" id="hero">
+    <div class="logo" style="margin:0 auto 8px;width:56px;height:56px;font-size:28px;border-radius:18px">✦</div>
+    <h2>Private AI on your device</h2>
+    <p>No server.You are just a model download away from your internet free experience.</p>
+    <select id="model">
+      <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Tiny · fastest · ~0.4 GB</option>
+      <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC" selected>Small · balanced · ~0.9 GB</option>
+      <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Medium · smarter · ~1.1 GB</option>
+      <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">Large · best · ~2.5 GB</option>
+      <option value="Phi-3.5-vision-instruct-q4f16_1-MLC">Vision · sees images · ~4 GB (strong phone)</option>
+    </select>
+    <button class="go" id="load">Download &amp; start</button>
+    <div class="prog" id="prog"><i id="bar"></i></div>
+    <div id="st"></div>
+    <button class="chip" id="seeall" style="margin-top:10px">⬇ See all models &amp; sizes</button>
+  </div>
+</main>
+<div id="tray"></div>
+<form id="f">
+  <button type="button" class="ib" id="att" title="Attach files">📎</button>
+  <div class="box"><textarea id="in" rows="1" placeholder="Load a model to start…" disabled></textarea><button type="button" class="ib2" id="mic" title="Dictate">🎤</button></div>
+  <button id="send" disabled>➤</button>
+</form>
+<input type="file" id="fi" multiple hidden accept="image/*,.pdf,.docx,.txt,.md,.csv,.json,.html,.js,.py,.css,.xml,.sql">
+<div id="call"><video id="vid" autoplay muted playsinline></video><div class="orb" id="orb"></div><div id="cs"></div><button class="go" id="end">End call</button></div>
+<div id="dr"><div class="dp"><button class="go" id="nc">＋ New chat</button><div id="cl"></div><button class="chip" id="cfg">⚙ Persona &amp; export</button></div><div class="bk" id="dbk"></div></div>
+<div id="mm"><div class="bk" id="mbk"></div><div class="sh"><div class="shh"><b style="font-size:18px">AI models</b><button class="ib" id="mx">✕</button></div><p class="sm">Download a model once. It is saved on this device and works offline afterwards. Delete one to free space.</p><div id="ml"></div><div class="sm" id="stg"></div></div></div>
+<div id="toast"></div>
+
+<script type="module">
+const $=s=>document.querySelector(s);
+const log=$('#log'),inp=$('#in'),send=$('#send'),sys=$('#sys');
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const PERS={'Assistant':'You are a helpful, honest assistant. Keep answers clear and concise.','Tutor':'You are a patient tutor for Nigerian secondary school and university students. Explain step by step with simple examples.','Coder':'You are an expert programmer. Give working code with short explanations.','Translator':'You translate between English, Hausa, Yoruba, Igbo and Pidgin. Give the translation first, then a short note.','Writer':'You are a skilled writer. Help draft, improve and proofread text in a natural tone.'};
+const CHIPS=['Explain photosynthesis simply','Make a CSV timetable for my week','Draw an SVG logo for a bakery','Write a cover letter I can save as PDF'];
+const EXT={python:'py',javascript:'js',markdown:'md',typescript:'ts',bash:'sh',csharp:'cs','c++':'cpp'};
+const BASE='\nTo create a file (CSV, HTML, SVG drawing, code, etc.), put its complete content in ONE fenced code block tagged with the language; the app adds a Save button. You cannot make photographs, but you can draw SVG.';
+const CALL='\nYou are in a live voice call: answer in 1-3 short spoken sentences, no markdown, no lists.';
+const CD='https://cdnjs.cloudflare.com/ajax/libs/';
+const TYPING='<span class="typing"><span></span><span></span><span></span></span>';
+sys.value=store.get('sys',PERS.Assistant);
+let chats=store.get('chats',null),cur=null,history=[],engine=null,busy=false,vision=false,docs=[],atts=[],live=false,mr=null,stt=null,loading=false,activeId=null,W=null;
+if(!chats){const o=store.get('chat',[]);chats=o.length?[{id:Date.now(),title:(o.find(m=>m.role==='user')?.content||'Old chat').slice(0,40),ts:Date.now(),msgs:o}]:[]}
+if(!chats.length)chats.push({id:Date.now(),title:'New chat',ts:Date.now(),msgs:[]});
+cur=chats[0];history=cur.msgs;
+const saveChats=()=>{cur.ts=Date.now();store.set('chats',chats)};
+const toast=t=>{$('#toast').textContent=t;$('#toast').style.opacity=t?1:0};
+const loaded={};const loadJS=u=>loaded[u]??=new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=()=>no(new Error('Could not load library (needs internet once)'));document.head.append(s)});
+const dl=(n,b)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)};
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+let dp;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('#inst').style.display='block'});
+$('#inst').onclick=async()=>{if(dp){dp.prompt();await dp.userChoice;dp=null;$('#inst').style.display='none'}};
+
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const md=t=>t.split('```').map((p,i)=>{
+  if(i%2){const m=p.match(/^([\w+-]*)\n/),l=(m?m[1]:'').toLowerCase(),code=p.replace(/^[\w+-]*\n/,'');
+    const pv=l==='svg'&&/<\/svg>\s*$/.test(code)?'<img class="svgp" src="data:image/svg+xml;utf8,'+encodeURIComponent(code)+'">':'';
+    return '<div class="cb"><div class="ch"><span>'+(l||'code')+'</span><span><button class="sv" data-a="cp">Copy</button><button class="sv" data-a="sv" data-l="'+l+'">Save</button></span></div>'+pv+'<pre><code>'+esc(code)+'</code></pre></div>'}
+  return esc(p).replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/^#{1,3} (.+)$/gm,'<b>$1</b>')}).join('');
+log.addEventListener('click',e=>{const b=e.target.closest('.sv');if(!b)return;const code=b.closest('.cb').querySelector('code').textContent;
+  if(b.dataset.a==='cp'){navigator.clipboard?.writeText(code);b.textContent='✓';setTimeout(()=>b.textContent='Copy',1000)}
+  else{const l=b.dataset.l;dl('ai-file.'+(EXT[l]||l||'txt'),new Blob([code],{type:'text/plain'}))}});
+
+function speak(t){return new Promise(ok=>{speechSynthesis.cancel();const s=t.replace(/```[\s\S]*?```/g,' code omitted. ').replace(/[*#`_]/g,'').split(/(?<=[.!?\n])\s+/).filter(x=>x.trim());if(!s.length)return ok();s.forEach((x,i)=>{const u=new SpeechSynthesisUtterance(x);if(i===s.length-1)u.onend=u.onerror=ok;speechSynthesis.speak(u)})})}
+async function pdf(text){try{toast('Making PDF…');await loadJS(CD+'jspdf/2.5.1/jspdf.umd.min.js');const d=new window.jspdf.jsPDF();const L=d.splitTextToSize(text.replace(/[^\x09\x0A\x20-\x7E\u00A0-\u00FF]/g,''),180);let y=15;L.forEach(l=>{if(y>280){d.addPage();y=15}d.text(l,15,y);y+=6});d.save('ai-output.pdf');toast('')}catch(e){toast(e.message)}}
+
+function add(role,text){
+  $('#chips')?.remove();
+  const r=document.createElement('div');r.className='row '+(role==='user'?'u':'a');
+  if(role!=='user')r.innerHTML='<div class="av">✦</div>';
+  const col=document.createElement('div');col.className='col';
+  const m=document.createElement('div');m.className='m';m._raw=text;m.innerHTML=text?md(text):TYPING;col.append(m);
+  if(role!=='user'){const t=document.createElement('div');t.className='tl';
+    [['Copy',b=>{navigator.clipboard?.writeText(m._raw);b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',1200)}],['🔊',()=>speak(m._raw)],['PDF',()=>pdf(m._raw)],['Word',()=>dl('ai-output.doc',new Blob(['<html><meta charset="utf-8"><body><pre style="white-space:pre-wrap;font-family:Calibri">'+esc(m._raw)+'</pre></body></html>'],{type:'application/msword'}))],['.md',()=>dl('ai-output.md',new Blob([m._raw]))]]
+    .forEach(([n,f])=>{const b=document.createElement('button');b.className='cp';b.textContent=n;b.onclick=()=>f(b);t.append(b)});col.append(t)}
+  r.append(col);log.append(r);log.scrollTop=log.scrollHeight;return m}
+function chips(){if(history.length||$('#chips'))return;const d=document.createElement('div');d.id='chips';d.className='chips';CHIPS.forEach(t=>{const b=document.createElement('button');b.className='chip';b.textContent=t;b.onclick=()=>{inp.value=t;$('#f').requestSubmit()};d.append(b)});log.append(d)}
+history.forEach(m=>add(m.role,m.content));
+
+Object.keys(PERS).forEach(k=>{const b=document.createElement('button');b.className='chip';b.textContent=k;b.onclick=()=>{sys.value=PERS[k];store.set('sys',sys.value)};$('#pers').append(b)});
+$('#cfg').onclick=()=>{closeDr();const s=$('#sysbox').style;s.display=s.display==='block'?'none':'block'};
+sys.onchange=()=>store.set('sys',sys.value);
+// ---------- chat history ----------
+const dr=$('#dr');function closeDr(){dr.classList.remove('on')}
+const blocked=()=>{if(busy||live){toast('Wait for the AI to finish first');return true}};
+function show(){[...log.querySelectorAll('.row,.chips')].forEach(x=>x.remove());history.forEach(m=>add(m.role,m.content));if(engine)chips();log.scrollTop=log.scrollHeight}
+function renderChats(){const cl=$('#cl');cl.innerHTML='';[...chats].sort((a,b)=>b.ts-a.ts).forEach(c=>{const d=document.createElement('div');d.className='ci'+(c===cur?' cur':'');
+  d.innerHTML='<span>'+esc(c.title)+'<small>'+new Date(c.ts).toLocaleDateString()+' · '+c.msgs.filter(m=>m.role==='user').length+' messages</small></span><button title="Delete">🗑</button>';
+  d.onclick=e=>e.target.tagName==='BUTTON'?delChat(c):openChat(c);cl.append(d)})}
+function openChat(c){if(blocked())return;cur=c;history=c.msgs;docs=[];show();closeDr()}
+function newChat(){if(blocked())return;if(!history.length){closeDr();return}const c={id:Date.now(),title:'New chat',ts:Date.now(),msgs:[]};chats.unshift(c);cur=c;history=c.msgs;docs=[];store.set('chats',chats);show();closeDr()}
+function delChat(c){if(blocked()||!confirm('Delete this chat?'))return;chats=chats.filter(x=>x!==c);if(!chats.length)chats.push({id:Date.now(),title:'New chat',ts:Date.now(),msgs:[]});if(c===cur){cur=chats[0];history=cur.msgs;docs=[];show()}store.set('chats',chats);renderChats()}
+$('#menu').onclick=()=>{renderChats();dr.classList.add('on')};$('#dbk').onclick=closeDr;$('#clr').onclick=newChat;$('#nc').onclick=newChat;
+$('#exp').onclick=()=>{dl('chat.txt',new Blob([history.map(m=>(m.role==='user'?'You: ':'AI: ')+m.content).join('\n\n')]))};
+
+// ---------- files in ----------
+const shrink=f=>new Promise(ok=>{const i=new Image();i.onload=()=>{const s=Math.min(1,768/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.85))};i.src=URL.createObjectURL(f)});
+async function readFile(f){
+  const n=f.name.toLowerCase();
+  if(f.type.startsWith('image/'))return{name:f.name,kind:'image',data:await shrink(f)};
+  if(n.endsWith('.pdf')){await loadJS(CD+'pdf.js/3.11.174/pdf.min.js');const o=pdfjsLib.GlobalWorkerOptions;
+    if(!(o.workerSrc||'').startsWith('blob')){const w=await(await fetch(CD+'pdf.js/3.11.174/pdf.worker.min.js')).text();o.workerSrc=URL.createObjectURL(new Blob([w],{type:'text/javascript'}))}
+    const p=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let t='';
+    for(let i=1;i<=p.numPages;i++)t+=(await(await p.getPage(i)).getTextContent()).items.map(x=>x.str).join(' ')+'\n';
+    return{name:f.name,kind:'text',data:t.trim()||'(No readable text. This PDF may be scanned images.)'}}
+  if(n.endsWith('.docx')){await loadJS(CD+'mammoth/1.6.0/mammoth.browser.min.js');return{name:f.name,kind:'text',data:(await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value}}
+  return{name:f.name,kind:'text',data:await f.text()}}
+function tray(){const t=$('#tray');t.innerHTML='';atts.forEach((a,i)=>{const c=document.createElement('span');c.className='att';c.innerHTML=(a.kind==='image'?'<img src="'+a.data+'">':'📄')+'<b>'+esc(a.name)+'</b><i data-i="'+i+'">×</i>';t.append(c)})}
+$('#tray').onclick=e=>{const i=e.target.dataset.i;if(i!==undefined){atts.splice(+i,1);tray()}};
+$('#att').onclick=()=>$('#fi').click();
+$('#fi').onchange=async e=>{for(const f of e.target.files){try{toast('Reading '+f.name+'…');atts.push(await readFile(f))}catch(x){toast('Could not read '+f.name+': '+x.message)}}e.target.value='';tray();toast('')};
+function docCtx(q){
+  if(!docs.length)return'';const w=[...new Set(q.toLowerCase().match(/\w{4,}/g)||[])];
+  return docs.map(d=>{let t=d.text;if(t.length>4000){t=t.match(/[\s\S]{1,1200}/g).map((c,i)=>({c,i,s:w.filter(x=>c.toLowerCase().includes(x)).length})).sort((a,b)=>b.s-a.s||a.i-b.i).slice(0,3).sort((a,b)=>a.i-b.i).map(x=>x.c).join('\n…\n')}return'[File: '+d.name+']\n'+t}).join('\n\n')}
+
+// ---------- voice ----------
+async function whisper(){if(stt)return stt;toast('Loading voice model (one-time, ~40 MB)…');const t=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2');stt=await t.pipeline('automatic-speech-recognition','Xenova/whisper-tiny.en');toast('');return stt}
+async function transcribe(blob){const c=new AudioContext({sampleRate:16000});const b=await c.decodeAudioData(await blob.arrayBuffer());const r=await(await whisper())(b.getChannelData(0));c.close();return(r.text||'').trim()}
+$('#mic').onclick=async()=>{
+  if(mr){mr.stop();return}
+  try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),ch=[];mr=new MediaRecorder(s);mr.ondataavailable=e=>ch.push(e.data);
+    mr.onstop=async()=>{s.getTracks().forEach(t=>t.stop());$('#mic').classList.remove('rec');mr=null;try{toast('Transcribing…');const t=await transcribe(new Blob(ch));inp.value+=(inp.value?' ':'')+t;inp.disabled=!engine;toast('')}catch(e){toast('Voice failed: '+e.message)}};
+    mr.start();$('#mic').classList.add('rec');toast('Recording… tap 🎤 again to stop')}catch(e){toast('Microphone blocked: '+e.message)}};
+const listen=(s,level)=>new Promise(ok=>{
+  const r=new MediaRecorder(new MediaStream(s.getAudioTracks())),ch=[];let spoke=false,q=0,t0=Date.now();
+  r.ondataavailable=e=>ch.push(e.data);r.onstop=()=>ok(spoke?new Blob(ch):null);r.start();
+  const iv=setInterval(()=>{
+    if(!live){clearInterval(iv);r.stop();return}
+    if(level()>.04){spoke=true;q=0}else if(spoke)q+=100;
+    if((spoke&&q>1300)||(!spoke&&Date.now()-t0>20000)){clearInterval(iv);r.stop()}},100)});
+const grab=v=>{const c=document.createElement('canvas'),s=512/Math.max(v.videoWidth,v.videoHeight);c.width=v.videoWidth*s;c.height=v.videoHeight*s;c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.8)};
+async function call(video){
+  if(!engine)return toast('Load a model first');if(live)return;
+  let s;try{s=await navigator.mediaDevices.getUserMedia({audio:true,video:video?{facingMode:'user'}:false})}catch(e){return toast('Permission needed: '+e.message)}
+  live=true;document.body.classList.add('incall');$('#call').classList.add('on');const v=$('#vid');v.style.display=video?'block':'none';if(video)v.srcObject=s;
+  const st=t=>$('#cs').textContent=t,orb=$('#orb');
+  if(video&&!vision)toast('Camera is on, but only the Vision model can see it');
+  try{await whisper()}catch(e){st('Voice model failed: '+e.message);live=false}
+  const ac=new AudioContext(),an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(s).connect(an);const d=new Uint8Array(1024);
+  const level=()=>{an.getByteTimeDomainData(d);let x=0;for(const b of d)x+=((b-128)/128)**2;return Math.sqrt(x/d.length)};
+  while(live){
+    orb.className='orb';st('Listening… just talk');
+    const blob=await listen(s,level);if(!live)break;if(!blob)continue;
+    orb.className='orb think';st('Thinking…');
+    let t='';try{t=await transcribe(blob)}catch{}
+    if(t.length<2||/^[\[(].*[\])]$/.test(t))continue;
+    const out=await turn(t,video&&vision?[{kind:'image',data:grab(v)}]:[],true);if(!live)break;
+    orb.className='orb talk';st('Speaking…');await speak(out)}
+  s.getTracks().forEach(t=>t.stop());ac.close();speechSynthesis.cancel();live=false;$('#call').classList.remove('on');document.body.classList.remove('incall');v.style.display='none'}
+$('#vc').onclick=()=>call(false);$('#cc').onclick=()=>call(true);
+$('#end').onclick=()=>{live=false;speechSynthesis.cancel();if(busy)engine?.interruptGenerate()};
+
+// ---------- model manager ----------
+const MODELS=[
+ {id:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',n:'Tiny',s:'~0.4 GB',d:'Fastest. Good for simple chat and voice calls.'},
+ {id:'Llama-3.2-1B-Instruct-q4f16_1-MLC',n:'Small',s:'~0.9 GB',d:'Balanced speed and quality.'},
+ {id:'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',n:'Medium',s:'~1.1 GB',d:'Smarter answers.'},
+ {id:'Phi-3.5-mini-instruct-q4f16_1-MLC',n:'Large',s:'~2.5 GB',d:'Best quality. Needs a strong phone.'},
+ {id:'Phi-3.5-vision-instruct-q4f16_1-MLC',n:'Vision',s:'~4 GB',d:'Understands images and the camera. Strong phone only.'}];
+const getW=()=>W??=import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm').catch(()=>{W=null;throw new Error('Need internet once to fetch the AI library')});
+const sz=n=>n>1e9?(n/1e9).toFixed(1)+' GB':Math.round(n/1e6)+' MB';
+async function loadModel(id,ui){
+  if(loading){toast('Another download is in progress');return false}
+  if(busy||live){toast('Wait for the AI to finish first');return false}
+  if(!navigator.gpu){ui.st('WebGPU is not available here. Use a recent Chrome or Edge.');return false}
+  loading=true;ui.st('Loading…');
+  try{const w=await getW();if(engine){try{await engine.unload()}catch{}engine=null}
+    engine=await w.CreateMLCEngine(id,{initProgressCallback:p=>{ui.bar(Math.round((p.progress||0)*100));ui.st(p.text)}});
+    activeId=id;vision=/vision/i.test(id);$('#hero')?.remove();$('#pill').classList.add('on');$('#pt').textContent=vision?'On-device · vision':'On-device · private';
+    inp.disabled=send.disabled=false;inp.placeholder='Message…';chips();navigator.storage?.persist?.();return true}
+  catch(e){ui.st('Failed: '+(e.message||e));if(!engine)inp.disabled=send.disabled=true;return false}
+  finally{loading=false}}
+$('#load').onclick=async()=>{const b=$('#load');b.disabled=true;$('#prog').style.display='block';
+  const ok=await loadModel($('#model').value,{st:t=>{const s=$('#st');if(s)s.textContent=t},bar:p=>{const x=$('#bar');if(x)x.style.width=p+'%'}});if(!ok)b.disabled=false};
+async function renderModels(){
+  const ml=$('#ml');ml.innerHTML='';let w=null;$('#stg').textContent='';
+  try{w=await getW()}catch(e){$('#stg').textContent=e.message}
+  for(const m of MODELS){
+    let has=false;try{has=w?await w.hasModelInCache(m.id):false}catch{}
+    const use=m.id===activeId,r=document.createElement('div');r.className='mr';
+    r.innerHTML='<div class="t"><b>'+m.n+' <small>'+m.s+'</small></b><span class="ok">'+(use?'● In use':has?'✓ Downloaded':'')+'</span></div><small>'+m.d+'</small><div class="pg"><i></i></div><small class="ms"></small><div class="bt"></div>';
+    const bt=r.querySelector('.bt'),pg=r.querySelector('.pg'),bar=pg.firstChild,ms=r.querySelector('.ms');
+    const b1=document.createElement('button');b1.className='go';b1.textContent=use?'In use':has?'Use this model':'⬇ Download';b1.disabled=use||!w;
+    b1.onclick=async()=>{b1.disabled=true;pg.style.display='block';const ok=await loadModel(m.id,{st:t=>ms.textContent=t,bar:p=>bar.style.width=p+'%'});if(ok){toast('Ready: '+m.n);renderModels()}else b1.disabled=false};
+    bt.append(b1);
+    if(has&&!use){const b2=document.createElement('button');b2.textContent='🗑';b2.title='Delete from this device';b2.onclick=async()=>{if(!confirm('Delete '+m.n+' from this device? You can download it again later.'))return;try{await w.deleteModelAllInfoInCache(m.id)}catch(e){toast(e.message)}renderModels()};bt.append(b2)}
+    ml.append(r)}
+  try{const e=await navigator.storage.estimate();$('#stg').textContent='Storage used by this app: '+sz(e.usage)+' of about '+sz(e.quota)}catch{}}
+$('#dm').onclick=()=>{$('#mm').classList.add('on');renderModels()};$('#seeall').onclick=$('#dm').onclick;
+$('#mx').onclick=$('#mbk').onclick=()=>$('#mm').classList.remove('on');
+
+// ---------- chat turn ----------
+async function turn(text,files=[],isCall=false){
+  if(!engine||busy)return'';busy=true;send.textContent='■';
+  const imgs=files.filter(f=>f.kind==='image').map(f=>f.data);
+  files.filter(f=>f.kind==='text').forEach(f=>docs.push({name:f.name,text:f.data}));
+  const disp=files.map(f=>'📎 '+f.name).join('\n')+(files.length?'\n':'')+text;
+  add('user',disp);history.push({role:'user',content:disp});if(cur.title==='New chat')cur.title=(text||files[0]?.name||'Chat').slice(0,40);
+  const ctx=docCtx(text);let umsg=text+(ctx?'\n\n'+ctx:'');
+  if(imgs.length&&!vision)umsg+='\n\n[An image was attached but you cannot see images. Tell the user to load the Vision model.]';
+  const content=imgs.length&&vision?[{type:'text',text:umsg},...imgs.map(u=>({type:'image_url',image_url:{url:u}}))]:umsg;
+  const out=add('assistant','');let acc='';
+  try{const msgs=[{role:'system',content:sys.value+BASE+(isCall?CALL:'')},...history.slice(-13,-1).map(m=>({role:m.role,content:m.content})),{role:'user',content}];
+    const s=await engine.chat.completions.create({messages:msgs,stream:true,temperature:.7});
+    for await(const c of s){acc+=c.choices[0]?.delta?.content||'';out._raw=acc;out.innerHTML=md(acc);log.scrollTop=log.scrollHeight}}
+  catch(e){acc+=(acc?'\n':'')+'[Error: '+(e.message||e)+']';out._raw=acc;out.innerHTML=md(acc)}
+  history.push({role:'assistant',content:acc});saveChats();busy=false;send.textContent='➤';return acc}
+inp.addEventListener('input',()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,130)+'px'});
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&innerWidth>700){e.preventDefault();$('#f').requestSubmit()}});
+$('#f').onsubmit=async e=>{e.preventDefault();if(busy){engine.interruptGenerate();return}
+  const text=inp.value.trim();if((!text&&!atts.length)||!engine)return;
+  const f=atts;atts=[];tray();inp.value='';inp.style.height='auto';
+  await turn(text||'Please read the attached file(s) and summarize them.',f)};
+</script>
+</body>
+</html>
